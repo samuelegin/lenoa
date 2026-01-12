@@ -1,0 +1,55 @@
+# Environment Variables
+.env
+.env.local
+.env.production
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# Private Keys & Secrets
+.secret
+*.key
+*.pem
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Hardhat
+cache/
+artifacts/
+coverage/
+typechain-types/
+
+# Vite
+frontend/dist/
+frontend/.vite/
+frontend/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Test Coverage
+coverage.json
+.coverage_*
+
+# Hardhat Ignition
+ignition/deployments/chain-*/
+
+# Optional
+.npmrc
