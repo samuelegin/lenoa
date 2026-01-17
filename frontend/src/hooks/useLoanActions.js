@@ -2,13 +2,42 @@ import { useState } from 'react';
 import { useContract } from './useContract';
 import { usePublicClient } from 'wagmi';
 import { TOKENS, TX_CONFIRMATIONS } from '../utils/constants';
+import { ERC20_ABI } from '../utils/abis';
 
 export function useLoanActions() {
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState(null);
   
-  const { writeContract } = useContract('LoanFactory');
+  const { writeContract, walletClient, contractAddress } = useContract('LoanFactory');
   const publicClient = usePublicClient();
+
+  const approveToken = async (tokenAddress, spender, amount) => {
+    if (!walletClient) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      const [account] = await walletClient.getAddresses();
+      
+      const hash = await walletClient.writeContract({
+        address: tokenAddress,
+        abi: ERC20_ABI,
+        functionName: 'approve',
+        args: [spender, amount],
+        account,
+      });
+
+      await publicClient.waitForTransactionReceipt({
+        hash,
+        confirmations: TX_CONFIRMATIONS,
+      });
+
+      return hash;
+    } catch (error) {
+      console.error('Approval error:', error);
+      throw error;
+    }
+  };
 
   const createLoan = async (
     loanToken,
@@ -65,6 +94,12 @@ export function useLoanActions() {
       setIsLoading(true);
       setTxHash(null);
 
+      if (loanToken !== TOKENS.ETH) {
+        console.log('Approving token spend...');
+        await approveToken(loanToken, contractAddress, loanAmount);
+        console.log('Token approved');
+      }
+
       const value = loanToken === TOKENS.ETH ? loanAmount : 0n;
 
       const hash = await writeContract.write.fundLoan(
@@ -96,6 +131,11 @@ export function useLoanActions() {
     try {
       setIsLoading(true);
       setTxHash(null);
+      
+      if (loanToken !== TOKENS.ETH) {
+        console.log('Approving repayment token...');
+        await approveToken(loanToken, contractAddress, repaymentAmount);
+      }
 
       const value = loanToken === TOKENS.ETH ? repaymentAmount : 0n;
 

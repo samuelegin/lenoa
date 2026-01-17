@@ -60,9 +60,9 @@ export function useContract(contractName) {
   }, [contract, walletClient]);
 
   return {
-    contract,
-    readContract,
     writeContract,
-    address: contract?.address,
+    readContract,
+    walletClient,
+    contractAddress: contract?.address,
   };
 }
